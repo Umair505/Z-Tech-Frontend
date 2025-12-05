@@ -93,7 +93,7 @@ export default function HeroSection() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-auto lg:h-[500px]">
         
         {/* LEFT SIDE: MAIN CAROUSEL */}
-        <div className="lg:col-span-3 relative group overflow-hidden rounded-2xl border border-gray-800 bg-[#1a1c20]">
+        <div className="lg:col-span-3 relative group overflow-hidden rounded-2xl  bg-[#1a1c20]">
           
           <div className="relative w-full h-[400px] lg:h-full">
             <AnimatePresence initial={false} custom={direction}>
@@ -153,7 +153,7 @@ export default function HeroSection() {
         <div className="lg:col-span-1 flex flex-col gap-6 h-[400px] lg:h-full">
           
           {/* Banner 1: KS3 - Image Only */}
-          <div className="relative flex-1 group rounded-2xl overflow-hidden border border-gray-800">
+          <div className="relative flex-1 group rounded-2xl overflow-hidden">
             <Image
               src="/images/ks3.webp"
               alt="KS3 Gadget"
@@ -163,7 +163,7 @@ export default function HeroSection() {
           </div>
 
           {/* Banner 2: Watch - Image Only */}
-          <div className="relative flex-1 group rounded-2xl overflow-hidden border border-gray-800">
+          <div className="relative flex-1 group rounded-2xl overflow-hidden ">
             <Image
               src="/images/watch.jpeg"
               alt="Premium Watch"
