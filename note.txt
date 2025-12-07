@@ -1,0 +1,284 @@
+🟩 Project Name
+
+Z-TECH – The Ultimate Gadget Store
+
+🟦 Project Type
+
+A modern, high-performance E-commerce Web Application for selling tech gadgets
+(Earbuds, Smartwatches, Tablets, Accessories).
+
+🟨 Core Philosophy
+
+Sleek Tech Look
+
+Smooth Animations
+
+High-Quality Image-Driven UI
+
+Fast & Secure
+
+User + Admin Dashboard
+
+🟪 Theme System
+⭐ Overall Theme
+
+👉 Light Theme (Full Website Light)
+👉 Navbar + Footer remain Dark (as the provided UI image)
+
+🎨 Theme Color Palette (Final Approved Version)
+🔵 Light Theme (Default Website Theme)
+Backgrounds
+
+Main Background: #F9FAFB
+
+Section Background / White: #FFFFFF
+
+Card Background: #F3F4F6
+
+Text Colors
+
+Heading: #0F172A
+
+Body Text: #334155
+
+Muted Text: #64748B
+
+Borders
+
+Soft Border: #E5E7EB
+
+Strong Border: #CBD5E1
+
+Accent Colors
+
+Primary Brand Orange: #FF7A2F
+
+Primary Hover Orange: #FF8A45
+
+Tech Blue: #3B82F6
+
+Semantic
+
+Success: #22C55E
+
+Error: #EF4444
+
+Warning: #FACC15
+
+⚫ Dark Theme (Only Navbar & Footer)
+
+Dark BG 1: #0D0D0F
+
+Dark BG 2: #141416
+
+Text: #FFFFFF, #C7C7C7
+
+Accent: #FF7A2F
+
+🟧 Typography
+
+Font: Inter / Poppins / Urbanist (Any modern Sans-Serif)
+
+Heading Weight: 600–700
+
+Body Weight: 400–500
+
+Letter Spacing: Slightly tight for tech feel
+
+🟦 Tech Stack
+Frontend
+
+Next.js (App Router)
+
+React.js
+
+Tailwind CSS
+
+shadcn/ui
+
+Lucide React Icons
+
+Framer Motion (animations)
+
+Next/Image for optimization
+
+Backend
+
+Node.js
+
+Express.js
+
+MongoDB (Mongoose or direct driver)
+
+JWT Authentication
+
+Firebase Auth (Google login optional)
+
+Deployment
+
+Vercel (Frontend)
+
+Render / Railway / Vercel Serverless (Backend)
+
+🟪 Top-Level Folder Structure (AI Should Follow)
+/ztech
+ ├── app/
+ │    ├── layout.js
+ │    ├── page.js (Home)
+ │    ├── products/
+ │    │      ├── page.js
+ │    │      └── [id]/page.js
+ │    ├── cart/
+ │    │      └── page.js
+ │    ├── checkout/
+ │    │      └── page.js
+ │    ├── auth/
+ │    │      ├── login/page.js
+ │    │      └── register/page.js
+ │    ├── admin/
+ │           ├── products/page.js
+ │           ├── products/add/page.js
+ │           ├── products/edit/[id]/page.js
+ │           └── orders/page.js
+ │
+ ├── components/
+ │    ├── Navbar.jsx
+ │    ├── Footer.jsx
+ │    ├── ProductCard.jsx
+ │    ├── HeroCarousel.jsx
+ │    ├── Categories.jsx
+ │    ├── ProductFilters.jsx
+ │    ├── CartItem.jsx
+ │    ├── AdminSidebar.jsx
+ │    └── UI/ (reusable UI elements)
+ │           ├── Button.jsx
+ │           ├── Input.jsx
+ │           ├── Badge.jsx
+ │           └── Card.jsx
+ │
+ ├── lib/
+ │    ├── dbConnect.js
+ │    ├── auth.js
+ │    └── utils.js
+ │
+ ├── public/
+ │    └── images/
+ │          └── products/
+ │
+ ├── styles/
+ │    └── globals.css
+ │
+ └── tailwind.config.js
+
+🟧 Pages & Features (AI Should Understand)
+🏠 1. Home Page
+
+Hero carousel
+
+Featured gadgets
+
+Categories
+
+Trending products
+
+Dark navbar + dark footer
+
+📦 2. Product Listing Page
+
+Filters
+
+Sort options
+
+Product grid
+
+Pagination
+
+🔎 3. Product Details Page
+
+Image gallery
+
+Full description
+
+Add to Cart
+
+Reviews section
+
+🛒 4. Cart Page
+
+List of selected items
+
+Quantity update
+
+Remove item
+
+Total summary
+
+Checkout button
+
+💳 5. Checkout Page
+
+Order review
+
+Shipping address form
+
+Payment integration (Bkash/Card)
+
+🔐 6. Auth Pages
+
+Login
+
+Register
+
+Forgot password
+
+🛠 7. Admin Dashboard
+Product Management
+
+Add product
+
+Edit product
+
+Delete product
+
+Inventory control
+
+Order Management
+
+Update order status
+
+View details
+
+🟩 Animations (Framer Motion Rules)
+
+Hero images slide left/right
+
+Product cards hover scale (1.03)
+
+Buttons ripple/scale
+
+Page transitions fade-in
+
+🟧 UI Component Rules
+
+Buttons = Orange primary
+
+Inputs = Light gray background
+
+Cards = White with soft border
+
+Product card = image top, name + price, add-to-cart icon
+
+Icons = Lucide icons only
+
+All forms = rounded-lg, shadow-sm
+
+🟦 AI Instruction Summary
+
+“Use Light Theme across all pages except Navbar + Footer, which must remain Dark.
+Use Tailwind + shadcn + Framer Motion.
+Always use the color palette provided.
+Generate components following the folder structure.
+Use Next.js App Router conventions.
+Use React Server + Client components appropriately.
+All product images through Next/Image.
+Keep UI clean, futuristic, and gadget-focused.”
