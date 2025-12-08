@@ -1,32 +1,43 @@
-'use client' // ১. হুক ব্যবহারের জন্য এটি বাধ্যতামূলক
+'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import useAxiosSecure from './useAxiosSecure'
-import useAuth from './useAuth';
+import useAuth from '@/hooks/useAuth'        // Using absolute path
+import useAxiosSecure from '@/hooks/useAxiosSecure' // Using absolute path
 
 const useRole = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const axiosSecure = useAxiosSecure();
-  console.log(user);
+  console.log(user)
+
   const { data: role, isLoading: isRoleLoading } = useQuery({
     queryKey: ['role', user?.email],
-    
-    // ২. যতক্ষণ ইউজার লোড হচ্ছে বা ইউজার নেই, ততক্ষণ এই কুয়েরি বন্ধ থাকবে
-    enabled: !loading && !!user?.email, 
+    // Query will ONLY run if auth is done loading AND user exists
+    enabled: !authLoading && !!user?.email,
     
     queryFn: async () => {
-      // ৩. axiosSecure সরাসরি কল না করে .get() মেথড ব্যবহার করা ভালো
-      const { data } = await axiosSecure.get(`/user/role/${user?.email}`)
-      return data
+      // console.log("🔍 Checking role for:", user.email);
+      
+      // Make sure this matches your backend route exactly!
+      // If backend is app.get('/user/role/:email'), use this:
+      const { data } = await axiosSecure.get(`/user/role/${user?.email}`);
+      return data.role;
     },
-  })
-  
-  // ৪. যদি ইউজার লোডিং থাকে, তাহলে আমরাও লোডিং রিটার্ন করব
-  if (loading) {
-      return [null, true];
+    // Optional: Keep previous data while fetching new to prevent flickering
+    placeholderData: null, 
+  });
+
+  // Combine loading states
+  // If Auth is loading OR Role is fetching, return true for loading
+  if (authLoading || isRoleLoading) {
+    return [null, true];
   }
 
-  return [role?.role, isRoleLoading]
+  // If user is not logged in, return null role and false loading
+  if (!user) {
+    return [null, false];
+  }
+
+  return [role, false];
 }
 
 export default useRole;

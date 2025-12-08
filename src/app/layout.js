@@ -37,7 +37,6 @@ export default function RootLayout({ children }) {
               position="top-right"
               closeButton
             />
-            <Toaster position="top-center" reverseOrder={false} />
             <Footer />
           </QueryProvider>
         </AuthProvider>

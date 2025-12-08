@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+// 1. Import Custom Hook
+import useAuth from '@/hooks/useAuth';
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -16,31 +19,67 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // 2. Destructure functions from useAuth
+  const { createUser, updateUserProfile } = useAuth();
+
+  // --- SAVE USER TO MONGODB ---
+  const saveUserToDB = async (firebaseUser) => {
+    try {
+      const userInfo = {
+        name: name,
+        email: firebaseUser.email,
+        phone: phone, // ফোন নম্বর এখান থেকে ডাটাবেসে যাবে
+        photo: firebaseUser.photoURL || '',
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userInfo)
+      });
+
+      if (!response.ok) {
+         throw new Error('Failed to save user to database');
+      }
+      
+      const data = await response.json();
+      console.log("DB Save Success:", data);
+
+    } catch (error) {
+      console.error("DB Sync Error:", error);
+      toast.error("Account created, but failed to save details to database.");
+    }
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, password })
-      });
+      // Step 1: Create User in Firebase
+      const result = await createUser(email, password);
+      
+      // Step 2: Update Firebase Profile (Display Name)
+      // Note: Firebase doesn't handle Phone nicely in basic profile, so we only send Name & Photo here
+      await updateUserProfile(name, "https://i.ibb.co.com/M6hPdDv/avatar-icon-images-4.jpg"); // ডিফল্ট ফটো দিলাম
 
-      const data = await res.json();
+      // Step 3: Sync to MongoDB (With Phone Number)
+      await saveUserToDB(result.user);
 
-      if (!res.ok) {
-        toast.error(data.message || "Registration failed.");
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Account created successfully! Please log in.");
-      router.push('/login');
+      toast.success("Account created successfully!");
+      
+      // যেহেতু Firebase সাইনআপ করলে অটো লগিন হয়ে যায়, তাই সরাসরি হোমপেজে পাঠাচ্ছি
+      router.push('/'); 
 
     } catch (error) {
       console.error("Signup Error:", error);
-      toast.error("Something went wrong. Try again.");
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error("This email is already registered.");
+      } else if (error.code === 'auth/weak-password') {
+        toast.error("Password should be at least 6 characters.");
+      } else {
+        toast.error(error.message || "Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }

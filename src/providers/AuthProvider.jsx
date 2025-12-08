@@ -1,10 +1,8 @@
 'use client'
-
 import { createContext, useEffect, useState } from 'react'
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
-  getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -12,10 +10,11 @@ import {
   updateProfile,
 } from 'firebase/auth'
 import axios from 'axios'
-import { app } from '@/lib/firebase/firebase.init'
+import { auth } from '@/lib/firebase/firebase.init' 
 
 export const AuthContext = createContext(null)
-const auth = getAuth(app)
+
+// ৩. এখানে const auth = getAuth(app) লাইনটি আর দরকার নেই
 const googleProvider = new GoogleAuthProvider()
 
 const AuthProvider = ({ children }) => {
@@ -49,29 +48,36 @@ const AuthProvider = ({ children }) => {
     })
   }
 
-  // onAuthStateChange
+  // Observer
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async currentUser => {
-      console.log('CurrentUser-->', currentUser?.email)
-      if (currentUser?.email) {
-        setUser(currentUser)
+      console.log('Auth State Changed ->', currentUser?.email);
+      
+      setUser(currentUser);
 
-        // Get JWT token
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/jwt`,
-          {
-            email: currentUser?.email,
-          },
-          { withCredentials: true }
-        )
+      if (currentUser) {
+        try {
+          await axios.post(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}/jwt`,
+            { email: currentUser.email },
+            { withCredentials: true }
+          )
+        } catch (error) {
+          console.error("JWT Error:", error);
+        }
       } else {
-        setUser(currentUser)
-        await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/logout`, {
-          withCredentials: true,
-        })
+        try {
+          await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/logout`, {
+            withCredentials: true,
+          })
+        } catch (error) {
+          console.error("Logout API Error:", error);
+        }
       }
+      
       setLoading(false)
     })
+    
     return () => {
       return unsubscribe()
     }
