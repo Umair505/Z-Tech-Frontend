@@ -25,9 +25,8 @@ export default function LoginPage() {
             body: JSON.stringify({
                 name: user.displayName || 'Unknown',
                 email: user.email,
-                // Google Login এর সময় photoURL পাঠাবো
-                // Manual Login এর সময় এটি null হতে পারে, তাতে সমস্যা নেই (ব্যাকএন্ড হ্যান্ডেল করবে)
-                photo: user.photoURL || '' 
+                photo: user.photoURL || '',
+                phone: "" ,
             }),
         });
         await response.json();
