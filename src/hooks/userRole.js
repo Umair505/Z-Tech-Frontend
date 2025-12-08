@@ -7,7 +7,6 @@ import useAxiosSecure from '@/hooks/useAxiosSecure' // Using absolute path
 const useRole = () => {
   const { user, loading: authLoading } = useAuth();
   const axiosSecure = useAxiosSecure();
-  console.log(user)
 
   const { data: role, isLoading: isRoleLoading } = useQuery({
     queryKey: ['role', user?.email],

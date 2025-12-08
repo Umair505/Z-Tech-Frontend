@@ -97,7 +97,7 @@ export default function Navbar() {
                 {/* Admin Dashboard Link (Visible to Admin Only) */}
                 {isAdmin && (
                    <Link
-                   href="/dashboard/admin"
+                   href="/dashboard"
                    className={cn(
                      "text-sm font-medium transition-colors hover:text-orange-400 flex items-center gap-1",
                      pathname.includes('/dashboard') ? "text-orange-500" : "text-gray-300"
@@ -162,7 +162,7 @@ export default function Navbar() {
 
                           {isAdmin && (
                             <Link 
-                              href="/dashboard/admin" 
+                              href="/dashboard" 
                               onClick={() => setIsProfileOpen(false)}
                               className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-orange-400 transition-colors"
                             >
@@ -262,7 +262,7 @@ export default function Navbar() {
                   
                   {isAdmin && (
                      <Link
-                     href="/dashboard/admin"
+                     href="/dashboard"
                      onClick={() => setIsOpen(false)}
                      className="block px-3 py-3 rounded-md text-base font-medium text-orange-400 hover:bg-gray-800"
                    >

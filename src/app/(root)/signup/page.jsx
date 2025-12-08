@@ -59,16 +59,13 @@ export default function SignupPage() {
       // Step 1: Create User in Firebase
       const result = await createUser(email, password);
       
-      // Step 2: Update Firebase Profile (Display Name)
-      // Note: Firebase doesn't handle Phone nicely in basic profile, so we only send Name & Photo here
-      await updateUserProfile(name, "https://i.ibb.co.com/M6hPdDv/avatar-icon-images-4.jpg"); // ডিফল্ট ফটো দিলাম
+      await updateUserProfile(name,null); 
 
       // Step 3: Sync to MongoDB (With Phone Number)
       await saveUserToDB(result.user);
 
       toast.success("Account created successfully!");
       
-      // যেহেতু Firebase সাইনআপ করলে অটো লগিন হয়ে যায়, তাই সরাসরি হোমপেজে পাঠাচ্ছি
       router.push('/'); 
 
     } catch (error) {
