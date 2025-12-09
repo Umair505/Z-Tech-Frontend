@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 // import Image from 'next/image'; // Kept commented to ensure preview works without errors
 import Link from 'next/link';
 import { Search, Filter, SlidersHorizontal, X, ShoppingCart, Heart, Eye } from 'lucide-react';
+import Image from 'next/image';
 
 export default function ProductsPage() {
   // --- States ---
@@ -243,11 +244,13 @@ export default function ProductsPage() {
                       {/* Image Area with Link */}
                       <Link href={`/products/${product._id}`} className="relative h-60 bg-gray-50 flex items-center justify-center p-4 overflow-hidden cursor-pointer">
                         {product.images?.[0] ? (
-                          <img 
-                            src={product.images[0]} 
-                            alt={product.name}
-                            className={`object-contain h-full w-full group-hover:scale-110 transition-transform duration-500 ${isStockOut ? 'opacity-50 grayscale' : ''}`}
-                          />
+                         <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        fill // makes image cover the container
+                        className={`object-contain group-hover:scale-110 transition-transform duration-500 ${isStockOut ? 'opacity-50 grayscale' : ''}`}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
                         ) : (
                           <div className="text-gray-300 text-4xl">📦</div>
                         )}
