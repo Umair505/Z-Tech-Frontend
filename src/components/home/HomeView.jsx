@@ -6,6 +6,7 @@ import FeaturedProducts from "./FeaturedProducts";
 import NewArrivals from "./NewArrivals";
 import PopularProducts from "./PopularProducts";
 import SpecialOffer from './SpecialOffer';
+import BrandCarousel from './BrandCarousel';
 
 export default function HomeView({ initialProducts = [] }) {
   // Initialize with empty array if initialProducts is null/undefined
@@ -57,6 +58,7 @@ export default function HomeView({ initialProducts = [] }) {
         <FeaturedProducts products={safeProducts} />
         <PopularProducts products={safeProducts} />
         <SpecialOffer />
+        <BrandCarousel />
       </div>
     </div>
   );
