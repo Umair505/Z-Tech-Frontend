@@ -295,13 +295,13 @@ export default function AddProductPage() {
                 <option>Smart Watches</option>
                 <option>Headphones</option>
                 <option>Earbuds</option>
+                <option>Earphone</option>
                 <option>Speakers & Audio</option>
                 <option>Gaming Consoles</option>
                 <option>VR & AR</option>
                 <option>Cameras & Drones</option>
                 <option>Smart Home</option>
                 <option>Accessories</option>
-                <option>Networking</option>
                 </select>
                 {errors.category && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.category}</p>}
             </div>
