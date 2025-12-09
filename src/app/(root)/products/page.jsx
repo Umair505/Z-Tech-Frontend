@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-// import Image from 'next/image'; // Removing next/image for preview compatibility
+// import Image from 'next/image'; // Kept commented to ensure preview works without errors
 import Link from 'next/link';
 import { Search, Filter, SlidersHorizontal, X, ShoppingCart, Heart, Eye } from 'lucide-react';
 
@@ -18,19 +18,19 @@ export default function ProductsPage() {
   // Categories List
   const categories = [
     "All",
+    "Smartphones",
+    "Laptops",
+    "Tablets & iPads",
     "Smart Watches",
     "Headphones",
     "Earbuds",
     "Earphone",
     "Speakers & Audio",
     "Gaming Consoles",
+    "VR & AR",
     "Cameras & Drones",
     "Smart Home",
-    "Accessories",
-    "VR & AR",
-    "Smartphones",
-    "Laptops",
-    "Tablets & iPads",
+    "Accessories"
   ];
 
   // --- Fetch Data ---
@@ -41,44 +41,14 @@ export default function ProductsPage() {
         // Artificial delay for UX
         await new Promise(resolve => setTimeout(resolve, 800)); 
         
-        // In a real scenario, ensure this endpoint is reachable
-        // If testing locally without the backend running, this might fail or return empty
         const res = await fetch('http://localhost:5000/products');
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         setProducts(data);
       } catch (error) {
         console.error("Failed to fetch products:", error);
-        // Fallback dummy data for preview if fetch fails
-        setProducts([
-            {
-                _id: "1",
-                name: "Harman Kardon SoundSticks 5",
-                category: "Speakers & Audio",
-                price: 42999,
-                stock: 32,
-                isNewArrival: true,
-                images: ["https://placehold.co/600x600/orange/white?text=Harman+Kardon"]
-            },
-            {
-                _id: "2",
-                name: "Sony WH-1000XM5",
-                category: "Headphones",
-                price: 35000,
-                stock: 10,
-                isNewArrival: false,
-                images: ["https://placehold.co/600x600/black/white?text=Sony+XM5"]
-            },
-            {
-                _id: "3",
-                name: "Apple Watch Series 9",
-                category: "Smart Watches",
-                price: 55000,
-                stock: 0,
-                isNewArrival: true,
-                images: ["https://placehold.co/600x600/red/white?text=Apple+Watch"]
-            }
-        ]);
+        // Fallback dummy data in case backend is down
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -239,12 +209,11 @@ export default function ProductsPage() {
           {/* 3. Product Grid Area */}
           <main className="lg:w-3/4">
             
-            {/* Header: Count & Sort (Optional) */}
+            {/* Header: Count & Sort */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-gray-500 text-sm">
                 Showing <span className="font-bold text-gray-900">{filteredProducts.length}</span> results
               </p>
-              {/* You can add a Sort Dropdown here later */}
             </div>
 
             {loading ? (
@@ -265,69 +234,86 @@ export default function ProductsPage() {
             ) : filteredProducts.length > 0 ? (
               // --- Product Grid ---
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <div key={product._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-orange-100 transition-all duration-300 overflow-hidden flex flex-col">
-                    
-                    {/* Image Area */}
-                    <div className="relative h-60 bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
-                      {product.images?.[0] ? (
-                        <img 
-                          src={product.images[0]} 
-                          alt={product.name}
-                          className="object-contain h-full w-full group-hover:scale-110 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="text-gray-300 text-4xl">📦</div>
-                      )}
+                {filteredProducts.map((product) => {
+                  const isStockOut = product.stock <= 0;
+                  
+                  return (
+                    <div key={product._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-orange-100 transition-all duration-300 overflow-hidden flex flex-col relative">
                       
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-1">
-                        {product.isNewArrival && <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">New</span>}
-                        {product.stock <= 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Out of Stock</span>}
-                      </div>
-
-                      {/* Quick Actions (Hover) */}
-                      <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                        <button className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-orange-500 hover:text-white transition-colors" title="View Details">
-                          <Eye size={18} />
-                        </button>
-                        <button className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-red-500 hover:text-white transition-colors" title="Add to Wishlist">
-                          <Heart size={18} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Content Area */}
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="text-xs font-semibold text-orange-500 uppercase tracking-wider mb-1">
-                        {product.category}
-                      </div>
-                      <h3 className="text-gray-900 font-bold text-lg leading-snug mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
-                        {product.name}
-                      </h3>
-                      
-                      {/* Price & Cart Button */}
-                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-gray-400 font-medium">Price</span>
-                          <span className="text-xl font-bold text-gray-900">
-                            ৳{product.price?.toLocaleString()}
-                          </span>
+                      {/* Image Area with Link */}
+                      <Link href={`/products/${product._id}`} className="relative h-60 bg-gray-50 flex items-center justify-center p-4 overflow-hidden cursor-pointer">
+                        {product.images?.[0] ? (
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name}
+                            className={`object-contain h-full w-full group-hover:scale-110 transition-transform duration-500 ${isStockOut ? 'opacity-50 grayscale' : ''}`}
+                          />
+                        ) : (
+                          <div className="text-gray-300 text-4xl">📦</div>
+                        )}
+                        
+                        {/* Badges */}
+                        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
+                          {product.isNewArrival && !isStockOut && (
+                            <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-md">
+                              New
+                            </span>
+                          )}
+                          {isStockOut && (
+                            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-md">
+                              Out of Stock
+                            </span>
+                          )}
                         </div>
-                        <button 
-                          disabled={product.stock <= 0}
-                          className={`p-3 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center ${
-                            product.stock > 0 
-                            ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200' 
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          }`}
-                        >
-                          <ShoppingCart size={20} />
-                        </button>
+
+                        {/* Quick Actions (Hover) */}
+                        <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-10">
+                          <div className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-orange-500 hover:text-white transition-colors" title="View Details">
+                            <Eye size={18} />
+                          </div>
+                          <div className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-red-500 hover:text-white transition-colors" title="Add to Wishlist">
+                            <Heart size={18} />
+                          </div>
+                        </div>
+                      </Link>
+
+                      {/* Content Area */}
+                      <div className="p-5 flex flex-col flex-1">
+                        <div className="text-xs font-semibold text-orange-500 uppercase tracking-wider mb-1">
+                          {product.category}
+                        </div>
+                        
+                        {/* Title Link */}
+                        <Link href={`/products/${product._id}`}>
+                          <h3 className="text-gray-900 font-bold text-lg leading-snug mb-2 line-clamp-2 hover:text-orange-600 transition-colors">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        
+                        {/* Price & Cart Button */}
+                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-400 font-medium">Price</span>
+                            <span className="text-xl font-bold text-gray-900">
+                              ৳{product.price?.toLocaleString()}
+                            </span>
+                          </div>
+                          <button 
+                            disabled={isStockOut}
+                            className={`p-3 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center ${
+                              !isStockOut 
+                              ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200' 
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                            }`}
+                            title={isStockOut ? "Out of Stock" : "Add to Cart"}
+                          >
+                            <ShoppingCart size={20} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               // --- Empty State ---
