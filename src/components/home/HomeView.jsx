@@ -5,6 +5,7 @@ import HeroSection from "../HeroSection";
 import FeaturedProducts from "./FeaturedProducts";
 import NewArrivals from "./NewArrivals";
 import PopularProducts from "./PopularProducts";
+import SpecialOffer from './SpecialOffer';
 
 export default function HomeView({ initialProducts = [] }) {
   // Initialize with empty array if initialProducts is null/undefined
@@ -55,6 +56,7 @@ export default function HomeView({ initialProducts = [] }) {
         <NewArrivals products={safeProducts} />
         <FeaturedProducts products={safeProducts} />
         <PopularProducts products={safeProducts} />
+        <SpecialOffer />
       </div>
     </div>
   );

@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 export default function AddProductPage() {
   const fileInputRef = useRef(null);
   
-  // Form State
   const [form, setForm] = useState({
     name: '',
     brand: '',
@@ -23,9 +22,7 @@ export default function AddProductPage() {
     isNewArrival: false,
   });
 
-  // Validation Error State
   const [errors, setErrors] = useState({});
-
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +33,6 @@ export default function AddProductPage() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    // Clear error when user types
     if (errors[name]) {
         setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -68,7 +64,7 @@ export default function AddProductPage() {
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Validation Helper
+  // Validation
   const validateForm = () => {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = "Product name is required";
@@ -81,17 +77,17 @@ export default function AddProductPage() {
 
   // Submit handler
   const handleSubmit = async () => {
-    // 1. Run Validation
     if (!validateForm()) {
         toast.error("Please fill in all required fields marked with *");
         return;
     }
     
     setUploading(true);
+    // লোডিং টোস্ট শুরু হলো
     const toastId = toast.loading("Uploading images & creating product...");
 
     try {
-      // 2. Upload images
+      // 1. Image Upload Logic
       let imageUrls = [];
       
       if (files.length > 0) {
@@ -103,7 +99,7 @@ export default function AddProductPage() {
         const res = await fetch(`${API}/upload`, {
           method: 'POST',
           body: formData,
-          credentials: 'include',
+          credentials: 'include', // কুকি পাঠানোর জন্য জরুরি
         });
 
         const data = await res.json();
@@ -113,7 +109,7 @@ export default function AddProductPage() {
         imageUrls = data.files.map(f => f.url);
       }
 
-      // 3. Prepare product object
+      // 2. Prepare Product
       const product = {
         ...form,
         slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
@@ -123,7 +119,7 @@ export default function AddProductPage() {
         createdAt: new Date()
       };
 
-      // 4. Send to backend
+      // 3. Create Product
       const res2 = await fetch(`${API}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,6 +131,7 @@ export default function AddProductPage() {
       
       if (!res2.ok) throw new Error(result?.message || 'Failed to publish product');
 
+      // সফল হলে লোডিং টোস্টটি সাকসেস মেসেজে বদলে যাবে
       toast.success('Product published successfully!', { id: toastId });
       
       // Reset Form
@@ -149,6 +146,7 @@ export default function AddProductPage() {
 
     } catch (err) {
       console.error("Submit Error:", err);
+      // এরর হলে লোডিং টোস্টটি এরর মেসেজে বদলে যাবে
       toast.error(`Failed: ${err.message}`, { id: toastId });
     } finally {
       setUploading(false);
@@ -163,12 +161,11 @@ export default function AddProductPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Form */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-[#121214] border border-zinc-800 rounded-xl p-6 space-y-4">
             <h3 className="text-lg font-semibold text-white">General Information</h3>
             
-            {/* Product Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-400">Product Name <span className="text-red-500">*</span></label>
               <input 
@@ -186,26 +183,16 @@ export default function AddProductPage() {
               <label className="text-sm font-medium text-zinc-400">Brand</label>
               <input name="brand" value={form.brand} onChange={handleChange} type="text" placeholder="Brand Name" className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 focus:outline-none transition-colors" />
             </div>
+            
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-400">Description</label>
               <textarea name="description" value={form.description} onChange={handleChange} placeholder="Product description..." rows={4} className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 focus:outline-none transition-colors" />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400">Meta Title</label>
-              <input name="metaTitle" value={form.metaTitle} onChange={handleChange} type="text" placeholder="SEO Meta Title" className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 focus:outline-none transition-colors" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400">Meta Description</label>
-              <input name="metaDescription" value={form.metaDescription} onChange={handleChange} type="text" placeholder="SEO Meta Description" className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 focus:outline-none transition-colors" />
-            </div>
           </div>
 
-          {/* Pricing & Inventory */}
           <div className="bg-[#121214] border border-zinc-800 rounded-xl p-6 space-y-4">
             <h3 className="text-lg font-semibold text-white">Pricing & Inventory</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              {/* Price */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-400">Base Price <span className="text-red-500">*</span></label>
                 <div className="relative">
@@ -232,7 +219,6 @@ export default function AddProductPage() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          {/* Image Upload */}
           <div className="bg-[#121214] border border-zinc-800 rounded-xl p-6 space-y-4">
             <h3 className="text-sm font-semibold text-white">Product Images</h3>
             
@@ -256,6 +242,7 @@ export default function AddProductPage() {
                 accept="image/*"
             />
             
+            {/* Image Previews */}
             <div className="grid grid-cols-3 gap-2 mt-2">
               {previews.map((p, i) => (
                 <div key={i} className="relative group h-20 w-full">
@@ -278,7 +265,6 @@ export default function AddProductPage() {
             </div>
           </div>
 
-          {/* Category */}
           <div className="bg-[#121214] border border-zinc-800 rounded-xl p-6 space-y-4">
             <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-white">Category <span className="text-red-500">*</span></h3>
@@ -295,13 +281,13 @@ export default function AddProductPage() {
                 <option>Smart Watches</option>
                 <option>Headphones</option>
                 <option>Earbuds</option>
-                <option>Earphone</option>
                 <option>Speakers & Audio</option>
                 <option>Gaming Consoles</option>
                 <option>VR & AR</option>
                 <option>Cameras & Drones</option>
                 <option>Smart Home</option>
                 <option>Accessories</option>
+                <option>Networking</option>
                 </select>
                 {errors.category && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12}/> {errors.category}</p>}
             </div>
@@ -325,7 +311,7 @@ export default function AddProductPage() {
           <button
             onClick={handleSubmit}
             disabled={uploading}
-            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-lg shadow-orange-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {uploading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
             {uploading ? 'Publishing...' : 'Publish Product'}
