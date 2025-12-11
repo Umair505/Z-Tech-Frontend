@@ -22,7 +22,7 @@ export default async function Home() {
   const products = await getProducts();
 
   return (
-    // Pass server data to the client view
+
     <HomeView initialProducts={products} />
   );
 }

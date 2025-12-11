@@ -7,7 +7,7 @@ export default function FloatingActions() {
   const [isVisible, setIsVisible] = useState(false);
 
   // 1. WhatsApp Configuration
-  const whatsappNumber = "8801234567890"; // ⚠️ Replace with your actual number with country code
+  const whatsappNumber = "+8801770039505"; 
   const message = "Hello! I would like to know more about Z-TECH products.";
 
   // 2. Handle Scroll Visibility

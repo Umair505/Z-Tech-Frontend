@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from 'framer-motion';
 import { ArrowRight, Tag } from 'lucide-react';
+import Link from "next/link";
 
 export default function SpecialOffer() {
   return (
@@ -23,8 +24,6 @@ export default function SpecialOffer() {
             objectPosition: 'center'
           }}
         />
-        {/* Optional: Add a very subtle overlay if needed for text readability */}
-        {/* <div className="absolute inset-0 bg-black/5"></div> */}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,7 +79,7 @@ export default function SpecialOffer() {
                 <p className="text-3xl font-bold text-white">৳32,999</p>
               </div>
 
-              <a
+              <Link
                 href="/products"
                 className="group flex items-center gap-2 px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-full font-bold transition-all shadow-lg shadow-orange-600/30"
               >
@@ -89,7 +88,7 @@ export default function SpecialOffer() {
                   size={20}
                   className="transition-transform duration-300 group-hover:translate-x-1"
                 />
-              </a>
+              </Link>
             </motion.div>
 
           </div>
