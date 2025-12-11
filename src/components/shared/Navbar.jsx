@@ -6,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, ShoppingCart, User, Menu, X, Heart, 
-  LogOut, LayoutDashboard 
+  LogOut, LayoutDashboard, 
+  ShoppingBag
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/useAuth";
@@ -206,7 +207,7 @@ export default function Navbar() {
                             onClick={() => setIsProfileOpen(false)}
                             className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-orange-400 transition-colors"
                           >
-                            <User size={16} /> My Profile
+                            <ShoppingBag size={16} /> My Order
                           </Link>
 
                           <div className="border-t border-gray-700/50 mt-1">

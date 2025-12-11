@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
-import { Loader2, MapPin, Phone, User, Mail, CreditCard, Banknote } from 'lucide-react';
+import { Loader2, MapPin, Phone, User, Mail, CreditCard, Banknote, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
+import PaymentModal from '@/components/checkout/PaymentModal';
 
 export default function CheckoutPage() {
   const { user } = useAuth();
@@ -16,6 +18,7 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'online'
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -23,21 +26,21 @@ export default function CheckoutPage() {
     phone: '',
     district: '',
     address: '',
+    addressDetails: ''
   });
 
-  // 1. Fetch Cart Data
+  // Fetch Cart Data
   const { data: cart = [], isLoading: isCartLoading } = useQuery({
-    queryKey: ['cart', user?.email],
-    enabled: !!user?.email,
+    queryKey: ['cart'], // Standardized key
     queryFn: async () => {
       const res = await axiosSecure.get('/cart');
       return res.data;
     }
   });
 
-  // 2. Calculations
+  // Calculations
   const subtotal = cart.reduce((total, item) => total + ((Number(item.price) || 0) * (item.quantity || 1)), 0);
-  const shipping = 60; // Fixed shipping as per design
+  const shipping = 100; 
   const total = subtotal + shipping;
 
   // Handle Input Change
@@ -46,8 +49,8 @@ export default function CheckoutPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 3. Place Order Handler
-  const handlePlaceOrder = async (e) => {
+  // 1. Initial Submit Handler (Triggered by Button)
+  const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name || !formData.phone || !formData.address || !formData.district) {
@@ -58,50 +61,77 @@ export default function CheckoutPage() {
       return toast.error("Your cart is empty");
     }
 
+    // A. Confirm Order Intent
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to place an order of ৳${total.toLocaleString()}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#ea580c', // Orange
+      cancelButtonColor: '#374151', // Gray
+      confirmButtonText: 'Yes, Place Order!'
+    });
+
+    if (result.isConfirmed) {
+      if (paymentMethod === 'online') {
+        // B. If Online, Open Payment Modal
+        setIsPaymentModalOpen(true);
+      } else {
+        // C. If COD, Process Directly
+        processOrder({ method: 'cod' });
+      }
+    }
+  };
+
+  // 2. Final Order Processor (Called by COD or Modal)
+  const processOrder = async (paymentDetails) => {
     setLoading(true);
+    const toastId = toast.loading("Processing your order...");
 
     const orderData = {
       customer: {
         name: formData.name,
         email: user?.email,
         phone: formData.phone,
-        address: `${formData.address}, ${formData.district}`
+        address: `${formData.address}, ${formData.addressDetails ? formData.addressDetails + ', ' : ''}${formData.district}`
       },
       products: cart.map(item => ({
-        productId: item.productId, // Assuming cart item has productId
+        productId: item.productId, 
         name: item.name,
         quantity: item.quantity || 1,
         price: item.price,
         image: item.image
       })),
-      paymentMethod,
+      payment: {
+        method: paymentDetails.method, // 'cod' | 'bkash' | 'nagad'
+        status: paymentDetails.method === 'cod' ? 'pending' : 'paid',
+        transactionId: paymentDetails.transactionId || null,
+        senderNumber: paymentDetails.senderNumber || null,
+        amount: total
+      },
       subtotal,
       shipping,
       totalAmount: total,
-      currency: 'BDT',
-      transactionId: paymentMethod === 'online' ? `TXN-${Date.now()}` : null,
-      date: new Date().toISOString(), // The backend also sets createdAt, sending date for record
+      status: 'pending', // Order status
+      date: new Date().toISOString(),
     };
 
     try {
-      // A. Post Order to Backend
       const res = await axiosSecure.post('/order', orderData);
       
       if (res.data.insertedId) {
-        toast.success("Order placed successfully! 🎉");
+        toast.success("Order placed successfully! 🎉", { id: toastId });
         
-     
-        
-        // Clearing cart items loop (Temporary frontend fix if backend doesn't clear cart on order)
+        // Clear Cart
         await Promise.all(cart.map(item => axiosSecure.delete(`/cart/${item._id}`)));
         queryClient.invalidateQueries(['cart']);
 
-        // C. Redirect to Orders Page or Success Page
-        router.push('/orders'); 
+        setIsPaymentModalOpen(false);
+        router.push('/dashboard/orders'); 
       }
     } catch (error) {
       console.error("Order Error:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -113,12 +143,19 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
+      
+      {/* Payment Modal */}
+      <PaymentModal 
+        isOpen={isPaymentModalOpen} 
+        onClose={() => setIsPaymentModalOpen(false)} 
+        totalAmount={total}
+        onConfirm={processOrder}
+      />
+
       <div className="max-w-7xl mx-auto">
-        
-        {/* Page Title */}
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center md:text-left">Checkout</h1>
 
-        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <form onSubmit={handleCheckoutSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* --- LEFT COLUMN: BILLING DETAILS --- */}
           <div className="lg:col-span-2 space-y-6">
@@ -126,75 +163,37 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold text-orange-600 mb-6 uppercase tracking-wide">Billing Details</h2>
               
               <div className="space-y-4">
-                {/* Name */}
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                    Name <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Name <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 text-gray-400" size={18} />
-                    <input 
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Your Full Name"
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50"
-                      required
-                    />
+                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Your Full Name" className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50" required />
                   </div>
                 </div>
 
-                {/* Email & Phone */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      Email <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Email <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
-                      <input 
-                        type="email" 
-                        value={user?.email}
-                        disabled
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                      />
+                      <input type="email" value={user?.email} disabled className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Phone Number <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-3 text-gray-400" size={18} />
-                      <input 
-                        type="tel" 
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="01XXXXXXXXX"
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50"
-                        required
-                      />
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="01XXXXXXXXX" className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50" required />
                     </div>
                   </div>
                 </div>
 
-                {/* District & Address */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      District <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">District <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
-                      <select 
-                        name="district"
-                        value={formData.district}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50 appearance-none"
-                        required
-                      >
+                      <select name="district" value={formData.district} onChange={handleInputChange} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50 appearance-none" required>
                         <option value="">Select District</option>
                         <option value="Dhaka">Dhaka</option>
                         <option value="Chittagong">Chittagong</option>
@@ -209,33 +208,37 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      Address <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        name="address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        placeholder="House, Road, Area etc."
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50"
-                        required
-                    />
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Address <span className="text-red-500">*</span></label>
+                    <input type="text" name="address" value={formData.address} onChange={handleInputChange} placeholder="House, Road, Area etc." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50" required />
                   </div>
                 </div>
 
-                {/* Full Address Textarea */}
                 <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700">Detailed Address (Optional)</label>
-                    <textarea 
-                        name="addressDetails"
-                        placeholder="Additional instructions for delivery..."
-                        rows={3}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50"
-                    />
+                    <textarea name="addressDetails" value={formData.addressDetails} onChange={handleInputChange} placeholder="Additional instructions for delivery..." rows={3} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 transition-colors bg-gray-50" />
                 </div>
-
               </div>
+            </div>
+
+            {/* --- WHATSAPP SUPPORT SECTION --- */}
+            <div className="bg-green-50 p-6 rounded-xl border border-green-100 flex flex-col md:flex-row items-center justify-between gap-4">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
+                     <MessageCircle size={24} />
+                  </div>
+                  <div>
+                     <h3 className="font-bold text-green-800 text-lg">Need Help with your Order?</h3>
+                     <p className="text-sm text-green-700/80">Contact us directly on WhatsApp for manual orders or support.</p>
+                  </div>
+               </div>
+               <a 
+                 href={`https://wa.me/8801770039505?text=${encodeURIComponent("Hi, I'm having trouble placing an order on Z-TECH.")}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all whitespace-nowrap"
+               >
+                 Chat Now
+               </a>
             </div>
           </div>
 
@@ -250,14 +253,10 @@ export default function CheckoutPage() {
                     <div key={item._id} className="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0">
                         <div className="flex items-center gap-3">
                             <div className="h-12 w-12 bg-gray-50 rounded-md border border-gray-200 relative overflow-hidden">
-                                {item.image ? (
-                                    <Image src={item.image} alt={item.name} fill className="object-contain p-1" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No Img</div>
-                                )}
+                                {item.image ? <Image src={item.image} alt={item.name} fill className="object-contain p-1" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No Img</div>}
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-gray-800 line-clamp-1 w-32" title={item.name}>{item.name}</p>
+                                <p className="text-sm font-medium text-gray-800 line-clamp-1 w-32">{item.name}</p>
                                 <p className="text-xs text-gray-500">Qty: {item.quantity || 1}</p>
                             </div>
                         </div>
@@ -268,14 +267,8 @@ export default function CheckoutPage() {
 
               {/* Calculations */}
               <div className="space-y-3 py-4 border-t border-b border-gray-100">
-                <div className="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
-                    <span className="font-medium">৳{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                    <span>Shipping</span>
-                    <span className="font-medium">৳{shipping.toLocaleString()}</span>
-                </div>
+                <div className="flex justify-between text-sm text-gray-600"><span>Subtotal</span><span className="font-medium">৳{subtotal.toLocaleString()}</span></div>
+                <div className="flex justify-between text-sm text-gray-600"><span>Shipping</span><span className="font-medium">৳{shipping.toLocaleString()}</span></div>
               </div>
 
               {/* Total */}
@@ -287,31 +280,16 @@ export default function CheckoutPage() {
               {/* Payment Method */}
               <div className="space-y-3 mb-6">
                 <p className="text-sm font-bold text-gray-700 uppercase">Payment Method</p>
-                
                 <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                    <input 
-                        type="radio" 
-                        name="payment" 
-                        value="cod" 
-                        checked={paymentMethod === 'cod'} 
-                        onChange={() => setPaymentMethod('cod')}
-                        className="accent-orange-600 w-4 h-4"
-                    />
+                    <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="accent-orange-600 w-4 h-4" />
                     <Banknote size={20} className="text-green-600" />
                     <span className="text-sm font-medium text-gray-700">Cash on Delivery</span>
                 </label>
 
-                <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                    <input 
-                        type="radio" 
-                        name="payment" 
-                        value="online" 
-                        checked={paymentMethod === 'online'} 
-                        onChange={() => setPaymentMethod('online')}
-                        className="accent-orange-600 w-4 h-4"
-                    />
-                    <CreditCard size={20} className="text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">Online Payment</span>
+                <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                    <input type="radio" name="payment" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} className="accent-pink-600 w-4 h-4" />
+                    <CreditCard size={20} className="text-pink-600" />
+                    <span className="text-sm font-medium text-gray-700">Online Payment (Bkash/Nagad)</span>
                 </label>
               </div>
 
@@ -327,7 +305,6 @@ export default function CheckoutPage() {
               <p className="text-xs text-gray-500 text-center mt-4">
                 By placing your order, you agree to our <span className="text-orange-600 cursor-pointer hover:underline">Terms & Conditions</span>.
               </p>
-
             </div>
           </div>
 

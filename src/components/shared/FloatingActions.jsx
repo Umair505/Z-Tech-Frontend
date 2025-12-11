@@ -36,19 +36,36 @@ export default function FloatingActions() {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-4 items-end">
       
       {/* --- WhatsApp Button (Always Visible) --- */}
-      <a 
+      <motion.a 
         href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex items-center justify-center w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-110 relative"
+        className="group flex items-center justify-center w-14 h-14 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all relative"
         title="Chat on WhatsApp"
+        animate={{
+            rotate: [0, -10, 10, -10, 10, 0],
+            scale: [1, 1.1, 1, 1.1, 1]
+        }}
+        transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            repeatDelay: 4, // 4-5 seconds delay
+            ease: "easeInOut"
+        }}
+        whileHover={{ scale: 1.1, rotate: 0 }} // Stop animation on hover
       >
-        <MessageCircle size={24} />
+        <MessageCircle size={28} />
+        
+        {/* Notification Badge */}
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+          1
+        </span>
+
         {/* Tooltip text on hover */}
-        <span className="absolute right-14 bg-white text-gray-800 text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm">
+        <span className="absolute right-16 bg-white text-gray-800 text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm pointer-events-none">
           Chat with us
         </span>
-      </a>
+      </motion.a>
 
       {/* --- Scroll To Top Button (Conditional) --- */}
       <AnimatePresence>
