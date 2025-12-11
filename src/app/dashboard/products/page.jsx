@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Edit, Plus, X, Save, Loader2, Upload } from 'lucide-react';
+import { Trash2, Edit, Plus, X, Save, Loader2, Upload, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
-import Swal from 'sweetalert2'; // 1. Import SweetAlert2
+import Swal from 'sweetalert2'; 
 
 export default function ProductsPage() {
   const axiosSecure = useAxiosSecure();
@@ -17,7 +17,8 @@ export default function ProductsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [updating, setUpdating] = useState(false);
-  const [newImages, setNewImages] = useState([]); // State for new image upload
+  const [newImages, setNewImages] = useState([]); 
+  const [searchTerm, setSearchTerm] = useState(''); // New State for Search
 
   // 1. Fetch Products
   const { data: products = [], refetch, isLoading } = useQuery({
@@ -28,10 +29,16 @@ export default function ProductsPage() {
     }
   });
 
+  // Filter products based on search term
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // 2. Open Edit Modal with Data
   const openEditModal = (product) => {
     setEditingProduct({ ...product });
-    setNewImages([]); // Reset images on open
+    setNewImages([]); 
     setIsEditModalOpen(true);
   };
 
@@ -61,7 +68,6 @@ export default function ProductsPage() {
             });
 
             if (uploadRes.data.success) {
-                // Replace old images with new ones (or you can append if you want)
                 updatedImageUrls = uploadRes.data.files.map(f => f.url);
             }
         }
@@ -72,7 +78,7 @@ export default function ProductsPage() {
             ...restData,
             price: Number(editingProduct.price),
             stock: Number(editingProduct.stock),
-            images: updatedImageUrls // Set updated images
+            images: updatedImageUrls 
         };
 
         // C. Send PUT Request
@@ -96,7 +102,7 @@ export default function ProductsPage() {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ea580c', // Orange-600
+        confirmButtonColor: '#ea580c', 
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!'
     }).then(async (result) => {
@@ -120,22 +126,35 @@ export default function ProductsPage() {
     <div className="bg-gray-50 min-h-screen p-4 md:p-6">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Product Inventory</h1>
             <p className="text-gray-500 text-sm mt-1">Manage your store's catalog</p>
         </div>
-        <Link href="/dashboard/add-product">
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20 transition-all">
-            <Plus className="mr-2 h-4 w-4" /> Add New Product
-            </Button>
-        </Link>
+        
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Input 
+                    placeholder="Search products..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-white border-gray-300 focus:ring-orange-500"
+                />
+            </div>
+
+            <Link href="/dashboard/add-product">
+                <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20 transition-all w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" /> Add New Product
+                </Button>
+            </Link>
+        </div>
       </div>
 
       {/* Product Table - Responsive Container */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full">
         <div className="overflow-x-auto">
-            {/* Added min-w to force horizontal scroll on mobile instead of squishing */}
             <table className="w-full text-left border-collapse min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase text-xs font-semibold tracking-wider">
                 <tr>
@@ -149,10 +168,10 @@ export default function ProductsPage() {
             <tbody className="divide-y divide-gray-100">
                 {isLoading ? (
                     <tr><td colSpan="5" className="p-10 text-center text-gray-500">Loading products...</td></tr>
-                ) : products.length === 0 ? (
-                    <tr><td colSpan="5" className="p-10 text-center text-gray-500">No products found. Add one!</td></tr>
+                ) : filteredProducts.length === 0 ? (
+                    <tr><td colSpan="5" className="p-10 text-center text-gray-500">No products found.</td></tr>
                 ) : (
-                products.map((product) => (
+                filteredProducts.map((product) => (
                 <tr key={product._id} className="hover:bg-gray-50 transition-colors group">
                     <td className="p-5">
                         <div className="flex items-center gap-4">
