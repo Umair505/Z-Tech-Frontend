@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }) {
         <Link href="/">
         {/* Brand Logo */}
         <div className="h-20 flex items-center px-8 border-b border-gray-100">
-            <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg shadow-orange-500/20">
+            <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-600 rounded-br-lg rounded-tl-lg flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg shadow-orange-500/20">
                 Z
             </div>
             <div className="flex flex-col">

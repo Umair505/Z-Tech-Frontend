@@ -2,29 +2,54 @@
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, ShoppingCart, User, Menu, X, Heart, 
-  LogOut, LayoutDashboard, Settings, ChevronDown 
+  LogOut, LayoutDashboard 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/useAuth";
 import useRole from "@/hooks/userRole"; 
+import useAxiosSecure from "@/hooks/useAxiosSecure"; 
+import { useQuery } from "@tanstack/react-query"; 
+import CartDrawer from "./CartDrawer"; 
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false); // Mobile Menu
-  const [isProfileOpen, setIsProfileOpen] = useState(false); // Profile Dropdown
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // Logout Modal
+  const [isOpen, setIsOpen] = useState(false); 
+  const [isProfileOpen, setIsProfileOpen] = useState(false); 
+  const [isCartOpen, setIsCartOpen] = useState(false); 
+  const [showLogoutModal, setShowLogoutModal] = useState(false); 
   
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logOut } = useAuth();
-  const [role] = useRole(); // Role Check Hook
+  const [role] = useRole(); 
   const isAdmin = role === 'admin';
+  const axiosSecure = useAxiosSecure(); 
 
   const dropdownRef = useRef(null);
 
-  // Dropdown এর বাইরে ক্লিক করলে বন্ধ করার লজিক
+  // --- FETCH COUNTS (Dynamic Badges) ---
+  // Using 'cart' key ensures this updates whenever queryClient.invalidateQueries(['cart']) is called
+  const { data: cart = [] } = useQuery({
+    queryKey: ['cart'], 
+    enabled: !!user?.email, 
+    queryFn: async () => {
+      const res = await axiosSecure.get('/cart');
+      return res.data;
+    }
+  });
+
+  const { data: wishlist = [] } = useQuery({
+    queryKey: ['wishlist'],
+    enabled: !!user?.email,
+    queryFn: async () => {
+      const res = await axiosSecure.get('/wishlist');
+      return res.data;
+    }
+  });
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -35,7 +60,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Navigation Links
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Products", href: "/products" },
@@ -51,11 +75,12 @@ export default function Navbar() {
 
   return (
     <>
+      <CartDrawer isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
+
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0f1012]/90 backdrop-blur-md border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4">
             
-            {/* 1. Logo Section */}
             <Link href="/" className="flex-shrink-0 flex items-center gap-1 group">
               <div className="w-8 h-8 bg-orange-500 rounded-br-lg rounded-tl-lg flex items-center justify-center text-white font-bold text-xl group-hover:rotate-3 transition-transform duration-300">
                 Z
@@ -65,7 +90,6 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* 2. Desktop Search Bar */}
             <div className="hidden md:flex flex-1 max-w-xl mx-4 relative group">
               <input
                 type="text"
@@ -77,9 +101,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* 3. Desktop Actions & Links */}
             <div className="hidden md:flex items-center gap-6">
-              {/* Links */}
               <div className="flex gap-6 mr-4">
                 {navLinks.map((link) => (
                   <Link
@@ -94,7 +116,6 @@ export default function Navbar() {
                   </Link>
                 ))}
                 
-                {/* Admin Dashboard Link (Visible to Admin Only) */}
                 {isAdmin && (
                    <Link
                    href="/dashboard"
@@ -108,20 +129,31 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Action Icons */}
               <div className="flex items-center gap-4 border-l border-gray-700 pl-6">
+                <Link href="/wishlist">
                 <button className="text-gray-300 hover:text-orange-400 transition-colors relative">
                   <Heart size={22} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
                 </button>
-                
-                <Link href="/cart" className="text-gray-300 hover:text-orange-400 transition-colors relative">
-                  <ShoppingCart size={22} />
-                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    2
-                  </span>
                 </Link>
                 
-                {/* --- USER PROFILE SECTION --- */}
+                {/* Cart Button */}
+                <button 
+                  onClick={() => setIsCartOpen(true)}
+                  className="text-gray-300 hover:text-orange-400 transition-colors relative"
+                >
+                  <ShoppingCart size={22} />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
+                
                 {user ? (
                   <div className="relative" ref={dropdownRef}>
                     <button 
@@ -133,8 +165,8 @@ export default function Navbar() {
                           <Image
                             src={user.photoURL} 
                             alt="Profile" 
-                            width={36}   // w-9 means 36px (9 * 4)
-                            height={36}  // w-9 means 36px
+                            width={36} 
+                            height={36}
                             className="object-cover" 
                           />
                         ) : (
@@ -145,7 +177,6 @@ export default function Navbar() {
                       </div>
                     </button>
 
-                    {/* Profile Dropdown */}
                     <AnimatePresence>
                       {isProfileOpen && (
                         <motion.div
@@ -178,7 +209,6 @@ export default function Navbar() {
                             <User size={16} /> My Profile
                           </Link>
 
-                          
                           <div className="border-t border-gray-700/50 mt-1">
                             <button 
                               onClick={() => setShowLogoutModal(true)}
@@ -200,14 +230,15 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* 4. Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-4">
-              <Link href="/cart" className="text-gray-300 relative">
+              <button onClick={() => setIsCartOpen(true)} className="text-gray-300 relative">
                   <ShoppingCart size={22} />
-                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    2
-                  </span>
-              </Link>
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {cart.length}
+                    </span>
+                  )}
+              </button>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-gray-300 hover:text-white focus:outline-none p-1"
@@ -218,112 +249,38 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* 5. Mobile Menu (Animated Drawer) */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
               className="md:hidden bg-[#0f1012] border-t border-gray-800 overflow-hidden"
             >
-              <div className="px-4 py-6 space-y-6">
-                
-                {/* Mobile Search */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="w-full bg-[#1a1c20] text-gray-200 border border-gray-700 rounded-lg py-3 pl-4 pr-12 focus:outline-none focus:border-orange-500"
-                  />
-                  <button className="absolute right-2 top-2 bottom-2 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white px-3 rounded-md transition-colors">
-                    <Search size={18} />
-                  </button>
-                </div>
-
-                {/* Mobile Navigation Links */}
-                <div className="flex flex-col space-y-2">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      onClick={() => setIsOpen(false)}
-                      className={cn(
-                        "block px-3 py-3 rounded-md text-base font-medium transition-all hover:bg-gray-800",
-                        pathname === link.href
-                          ? "text-orange-500 bg-gray-800/50"
-                          : "text-gray-300"
-                      )}
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                  
-                  {isAdmin && (
-                     <Link
-                     href="/dashboard"
-                     onClick={() => setIsOpen(false)}
-                     className="block px-3 py-3 rounded-md text-base font-medium text-orange-400 hover:bg-gray-800"
-                   >
-                     Admin Dashboard
-                   </Link>
-                  )}
-                </div>
-
-                {/* Mobile User Actions */}
-                <div className="pt-4 border-t border-gray-800">
-                   {user ? (
-                     <div className="space-y-3">
-                        <div className="flex items-center gap-3 px-2 mb-4">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-                              {user.photoURL ? (
-                                <Image 
-                                    src={user.photoURL} 
-                                    alt="Profile" 
-                                    width={36}   
-                                    height={36}  
-                                    className="object-cover" 
-                                  />
-                              ) : <User className="w-full h-full p-2 text-gray-400" />}
-                            </div>
-                            <div>
-                                <p className="text-white font-medium">{user.displayName}</p>
-                                <p className="text-xs text-gray-500">{user.email}</p>
-                            </div>
-                        </div>
-                        <Link href="/profile" onClick={() => setIsOpen(false)} className="block w-full text-center bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-700">
-                           View Profile
-                        </Link>
+               <div className="px-4 py-6 space-y-6">
+                  <div className="pt-4 border-t border-gray-800">
+                    {user ? (
                         <button 
                           onClick={() => { setIsOpen(false); setShowLogoutModal(true); }}
                           className="block w-full bg-red-500/10 text-red-500 py-3 rounded-lg hover:bg-red-500 hover:text-white transition"
                         >
                            Logout
                         </button>
-                     </div>
-                   ) : (
-                     <div className="grid grid-cols-2 gap-4">
-                        <button className="flex items-center justify-center gap-2 bg-gray-800 text-white py-2.5 rounded-lg hover:bg-gray-700 transition">
-                          <Heart size={18} /> Wishlist
-                        </button>
-                        <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 bg-orange-600 text-white py-2.5 rounded-lg hover:bg-orange-700 transition">
+                    ) : (
+                        <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 bg-orange-600 text-white py-2.5 rounded-lg">
                           <User size={18} /> Login
                         </Link>
-                     </div>
-                   )}
-                </div>
-              </div>
+                    )}
+                  </div>
+               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
 
-      {/* --- LOGOUT CONFIRMATION MODAL --- */}
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -331,33 +288,16 @@ export default function Navbar() {
               onClick={() => setShowLogoutModal(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            
-            {/* Modal Content */}
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="relative bg-[#1a1c20] border border-gray-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center"
             >
-               <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-500">
-                  <LogOut size={24} />
-               </div>
                <h3 className="text-xl font-bold text-white mb-2">Log Out?</h3>
-               <p className="text-gray-400 mb-6">Are you sure you want to log out of your account?</p>
-               
-               <div className="flex gap-3">
-                  <button 
-                    onClick={() => setShowLogoutModal(false)}
-                    className="flex-1 py-2.5 rounded-lg bg-gray-800 text-gray-300 font-medium hover:bg-gray-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleLogoutConfirm}
-                    className="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
-                  >
-                    Yes, Logout
-                  </button>
+               <div className="flex gap-3 mt-4">
+                  <button onClick={() => setShowLogoutModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-800 text-gray-300">Cancel</button>
+                  <button onClick={handleLogoutConfirm} className="flex-1 py-2.5 rounded-lg bg-red-600 text-white">Yes, Logout</button>
                </div>
             </motion.div>
           </div>

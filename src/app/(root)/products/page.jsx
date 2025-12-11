@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-// import Image from 'next/image'; // Kept commented to ensure preview works without errors
-import Link from 'next/link';
-import { Search, Filter, SlidersHorizontal, X, ShoppingCart, Heart, Eye } from 'lucide-react';
-import Image from 'next/image';
+import { Search, Filter, SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import ProductCard from '@/components/cards/ProductCard'; // ১. স্মার্ট কার্ড ইম্পোর্ট
 
 export default function ProductsPage() {
   // --- States ---
@@ -39,7 +37,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Artificial delay for UX
+        // Artificial delay for UX demo
         await new Promise(resolve => setTimeout(resolve, 800)); 
         
         const res = await fetch('http://localhost:5000/products');
@@ -48,7 +46,6 @@ export default function ProductsPage() {
         setProducts(data);
       } catch (error) {
         console.error("Failed to fetch products:", error);
-        // Fallback dummy data in case backend is down
         setProducts([]);
       } finally {
         setLoading(false);
@@ -233,91 +230,15 @@ export default function ProductsPage() {
                 ))}
               </div>
             ) : filteredProducts.length > 0 ? (
-              // --- Product Grid ---
+              
+              // --- Product Grid (Using Reusable Component) ---
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => {
-                  const isStockOut = product.stock <= 0;
-                  
-                  return (
-                    <div key={product._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-orange-100 transition-all duration-300 overflow-hidden flex flex-col relative">
-                      
-                      {/* Image Area with Link */}
-                      <Link href={`/products/${product._id}`} className="relative h-60 bg-gray-50 flex items-center justify-center p-4 overflow-hidden cursor-pointer">
-                        {product.images?.[0] ? (
-                         <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill // makes image cover the container
-                        className={`object-contain group-hover:scale-110 transition-transform duration-500 ${isStockOut ? 'opacity-50 grayscale' : ''}`}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                        ) : (
-                          <div className="text-gray-300 text-4xl">📦</div>
-                        )}
-                        
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-                          {product.isNewArrival && !isStockOut && (
-                            <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-md">
-                              New
-                            </span>
-                          )}
-                          {isStockOut && (
-                            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-md">
-                              Out of Stock
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Quick Actions (Hover) */}
-                        <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 z-10">
-                          <div className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-orange-500 hover:text-white transition-colors" title="View Details">
-                            <Eye size={18} />
-                          </div>
-                          <div className="p-2 bg-white text-gray-600 rounded-full shadow-md hover:bg-red-500 hover:text-white transition-colors" title="Add to Wishlist">
-                            <Heart size={18} />
-                          </div>
-                        </div>
-                      </Link>
-
-                      {/* Content Area */}
-                      <div className="p-5 flex flex-col flex-1">
-                        <div className="text-xs font-semibold text-orange-500 uppercase tracking-wider mb-1">
-                          {product.category}
-                        </div>
-                        
-                        {/* Title Link */}
-                        <Link href={`/products/${product._id}`}>
-                          <h3 className="text-gray-900 font-bold text-lg leading-snug mb-2 line-clamp-2 hover:text-orange-600 transition-colors">
-                            {product.name}
-                          </h3>
-                        </Link>
-                        
-                        {/* Price & Cart Button */}
-                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
-                          <div className="flex flex-col">
-                            <span className="text-xs text-gray-400 font-medium">Price</span>
-                            <span className="text-xl font-bold text-gray-900">
-                              ৳{product.price?.toLocaleString()}
-                            </span>
-                          </div>
-                          <button 
-                            disabled={isStockOut}
-                            className={`p-3 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center ${
-                              !isStockOut 
-                              ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200' 
-                              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                            }`}
-                            title={isStockOut ? "Out of Stock" : "Add to Cart"}
-                          >
-                            <ShoppingCart size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {filteredProducts.map((product) => (
+                  // ২. এখানে আগের ইনলাইন কোডের বদলে কম্পোনেন্ট ব্যবহার করা হয়েছে
+                  <ProductCard key={product._id} product={product} />
+                ))}
               </div>
+              
             ) : (
               // --- Empty State ---
               <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-dashed border-gray-300">

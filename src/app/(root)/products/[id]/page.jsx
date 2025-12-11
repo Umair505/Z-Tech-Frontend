@@ -2,22 +2,34 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { 
   ShoppingCart, Heart, Share2, CheckCircle, AlertCircle, 
-  Truck, ShieldCheck, RefreshCw, Star, Minus, Plus, ChevronRight 
+  Truck, ShieldCheck, RefreshCw, Star, Minus, Plus, ChevronRight, Loader2 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import useAuth from '@/hooks/useAuth';
+import useAxiosSecure from '@/hooks/useAxiosSecure';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ProductDetailsPage() {
   const params = useParams();
   const { id } = params;
+  const router = useRouter();
+  
+  // Custom Hooks
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
 
+  // States
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false); // For button loading state
 
   // --- Fetch Data ---
   useEffect(() => {
@@ -31,7 +43,7 @@ export default function ProductDetailsPage() {
         setSelectedImage(data.images?.[0] || '');
       } catch (error) {
         console.error("Error:", error);
-        toast.error("Failed to load product details.");
+        // toast.error("Failed to load product details."); 
       } finally {
         setLoading(false);
       }
@@ -39,6 +51,15 @@ export default function ProductDetailsPage() {
 
     if (id) fetchProduct();
   }, [id]);
+
+  // --- Check Wishlist Status ---
+  useEffect(() => {
+    if (user && id) {
+      // Check if item is already in wishlist to set the red heart icon
+      // This is optional but good UX. Requires a fetch or check against cached wishlist data.
+      // For simplicity, we assume false initially or you can implement a check API.
+    }
+  }, [user, id]);
 
   // --- Handlers ---
   const handleQuantityChange = (type) => {
@@ -50,16 +71,76 @@ export default function ProductDetailsPage() {
     }
   };
 
-  const handleAddToCart = () => {
-    // Add logic for Cart Context or LocalStorage here
-    toast.success(`${quantity} x ${product.name} added to cart!`);
+  // Add to Cart Logic
+  const handleAddToCart = async () => {
+    if (!user) {
+      toast.error("Please login to add to cart");
+      return router.push('/login');
+    }
+
+    setActionLoading(true);
+    const cartItem = {
+      productId: product._id,
+      name: product.name,
+      image: product.images?.[0],
+      price: product.price,
+      category: product.category,
+      email: user.email,
+      quantity: quantity
+    };
+
+    try {
+      await axiosSecure.post('/cart', cartItem);
+      toast.success("Added to cart!");
+      queryClient.invalidateQueries(['cart']); // Update Navbar Badge
+    } catch (error) {
+      if(error.response?.data?.message){
+          toast.error(error.response.data.message);
+      } else {
+          toast.error("Failed to add to cart");
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Add to Wishlist Logic
+  const handleAddToWishlist = async () => {
+    if (!user) {
+      toast.error("Please login to add to wishlist");
+      return router.push('/login');
+    }
+
+    const wishlistItem = {
+      productId: product._id,
+      name: product.name,
+      image: product.images?.[0],
+      price: product.price,
+      category: product.category,
+      email: user.email
+    };
+
+    try {
+      await axiosSecure.post('/wishlist', wishlistItem);
+      toast.success("Added to wishlist!");
+      setIsWishlisted(true); // Turn icon red instantly
+      queryClient.invalidateQueries(['wishlist']); // Update Navbar Badge
+    } catch (error) {
+        if(error.response?.data?.message){
+            toast.error(error.response.data.message);
+            // If already added, maybe we want to show it as added
+            if(error.response.data.message === "Already in wishlist") setIsWishlisted(true);
+        } else {
+            toast.error("Failed to add to wishlist");
+        }
+    }
   };
 
   if (loading) return <ProductSkeleton />;
   if (!product) return <div className="text-center py-20 text-gray-500">Product Not Found</div>;
 
   const isInStock = product.stock > 0;
-  const discountPrice = product.price + (product.price * 0.1); // Fake discount for display
+  const discountPrice = product.price + (product.price * 0.1); 
 
   return (
     <div className="bg-white min-h-screen font-sans pb-20">
@@ -82,7 +163,6 @@ export default function ProductDetailsPage() {
           
           {/* --- LEFT: Image Gallery --- */}
           <div className="space-y-6">
-            {/* Main Image with Zoom Effect */}
             <div className="relative h-[400px] md:h-[500px] bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden group flex items-center justify-center">
               {product.isNewArrival && (
                 <span className="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full z-10">NEW</span>
@@ -98,7 +178,6 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* Thumbnails */}
             {product.images?.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {product.images.map((img, idx) => (
@@ -124,7 +203,6 @@ export default function ProductDetailsPage() {
 
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">{product.name}</h1>
 
-            {/* Ratings & Reviews */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center text-yellow-400 text-sm">
                 {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
@@ -136,14 +214,12 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Price */}
             <div className="flex items-end gap-3 mb-8 pb-8 border-b border-gray-100">
               <span className="text-4xl font-bold text-orange-600">৳{product.price?.toLocaleString()}</span>
               <span className="text-xl text-gray-400 line-through mb-1">৳{discountPrice.toFixed(0)}</span>
               <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded mb-2">10% OFF</span>
             </div>
 
-            {/* Description Short */}
             <p className="text-gray-600 leading-relaxed mb-8">
               {product.description?.substring(0, 200)}...
               <button 
@@ -181,20 +257,27 @@ export default function ProductDetailsPage() {
               {/* Add to Cart */}
               <button 
                 onClick={handleAddToCart}
-                disabled={!isInStock}
+                disabled={!isInStock || actionLoading}
                 className={`flex-1 h-12 rounded-full font-bold flex items-center justify-center gap-2 shadow-lg transition-all transform active:scale-95 ${
                   isInStock 
                   ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200' 
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                <ShoppingCart size={20} />
+                {actionLoading ? <Loader2 className="animate-spin" size={20}/> : <ShoppingCart size={20} />}
                 {isInStock ? 'Add to Cart' : 'Out of Stock'}
               </button>
 
               {/* Wishlist */}
-              <button className="h-12 w-12 border border-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors">
-                <Heart size={20} />
+              <button 
+                onClick={handleAddToWishlist}
+                className={`h-12 w-12 border rounded-full flex items-center justify-center transition-colors ${
+                    isWishlisted 
+                    ? 'border-red-500 bg-red-50 text-red-500' 
+                    : 'border-gray-300 text-gray-600 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                }`}
+              >
+                <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
               </button>
             </div>
 
@@ -244,7 +327,6 @@ export default function ProductDetailsPage() {
             
             {activeTab === 'specifications' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {/* Mock Specs */}
                  <div className="flex justify-between py-3 border-b border-gray-200">
                     <span className="text-gray-500 font-medium">Brand</span>
                     <span className="text-gray-900">{product.brand}</span>
