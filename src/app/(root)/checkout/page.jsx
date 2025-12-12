@@ -127,7 +127,7 @@ export default function CheckoutPage() {
         queryClient.invalidateQueries(['cart']);
 
         setIsPaymentModalOpen(false);
-        router.push('/dashboard/orders'); 
+        router.push('/profile'); 
       }
     } catch (error) {
       console.error("Order Error:", error);
