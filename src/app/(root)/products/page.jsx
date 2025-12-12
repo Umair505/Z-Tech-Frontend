@@ -40,7 +40,7 @@ export default function ProductsPage() {
         // Artificial delay for UX demo
         await new Promise(resolve => setTimeout(resolve, 800)); 
         
-        const res = await fetch('http://localhost:5000/products');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/products`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         setProducts(data);

@@ -31,8 +31,6 @@ export default function Navbar() {
 
   const dropdownRef = useRef(null);
 
-  // --- FETCH COUNTS (Dynamic Badges) ---
-  // Using 'cart' key ensures this updates whenever queryClient.invalidateQueries(['cart']) is called
   const { data: cart = [] } = useQuery({
     queryKey: ['cart'], 
     enabled: !!user?.email, 
@@ -72,6 +70,7 @@ export default function Navbar() {
     await logOut();
     setShowLogoutModal(false);
     setIsProfileOpen(false);
+    setIsOpen(false);
   };
 
   return (
@@ -82,6 +81,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4">
             
+            {/* Logo */}
             <Link href="/" className="flex-shrink-0 flex items-center gap-1 group">
               <div className="w-8 h-8 bg-orange-500 rounded-br-lg rounded-tl-lg flex items-center justify-center text-white font-bold text-xl group-hover:rotate-3 transition-transform duration-300">
                 Z
@@ -91,6 +91,7 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {/* Desktop Search */}
             <div className="hidden md:flex flex-1 max-w-xl mx-4 relative group">
               <input
                 type="text"
@@ -102,6 +103,7 @@ export default function Navbar() {
               </button>
             </div>
 
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-6">
               <div className="flex gap-6 mr-4">
                 {navLinks.map((link) => (
@@ -231,7 +233,19 @@ export default function Navbar() {
               </div>
             </div>
 
-            <div className="md:hidden flex items-center gap-4">
+            {/* Mobile Icons */}
+            <div className="md:hidden flex items-center gap-3">
+              <Link href="/wishlist">
+                <button className="text-gray-300 relative">
+                  <Heart size={22} />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </button>
+              </Link>
+              
               <button onClick={() => setIsCartOpen(true)} className="text-gray-300 relative">
                   <ShoppingCart size={22} />
                   {cart.length > 0 && (
@@ -240,6 +254,7 @@ export default function Navbar() {
                     </span>
                   )}
               </button>
+              
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-gray-300 hover:text-white focus:outline-none p-1"
@@ -250,6 +265,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Mobile Menu */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -258,18 +274,114 @@ export default function Navbar() {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden bg-[#0f1012] border-t border-gray-800 overflow-hidden"
             >
-               <div className="px-4 py-6 space-y-6">
-                  <div className="pt-4 border-t border-gray-800">
+               <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
+                  
+                  {/* Mobile Search */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search gadgets..."
+                      className="w-full bg-[#1a1c20] text-gray-200 border border-gray-700 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 placeholder:text-gray-500"
+                    />
+                    <button className="absolute right-1 top-1 bottom-1 bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full transition-colors duration-300">
+                      <Search size={18} />
+                    </button>
+                  </div>
+
+                  {/* User Profile Section (Mobile) */}
+                  {user && (
+                    <div className="bg-[#1a1c20] border border-gray-700 rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orange-500 flex-shrink-0">
+                          {user.photoURL ? (
+                            <Image
+                              src={user.photoURL} 
+                              alt="Profile" 
+                              width={48} 
+                              height={48}
+                              className="object-cover" 
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-700 flex items-center justify-center text-white">
+                              <User size={24} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-bold truncate">{user.displayName || 'User'}</p>
+                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Navigation Links */}
+                  <div className="space-y-1">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.name}
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={cn(
+                          "block py-3 px-4 rounded-lg text-base font-medium transition-colors",
+                          pathname === link.href 
+                            ? "bg-orange-500/10 text-orange-500" 
+                            : "text-gray-300 hover:bg-gray-800 hover:text-orange-400"
+                        )}
+                      >
+                        {link.name}
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* User Actions */}
+                  {user && (
+                    <div className="space-y-2 pt-2 border-t border-gray-800">
+                      {isAdmin && (
+                        <Link 
+                          href="/dashboard"
+                          onClick={() => setIsOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 py-3 px-4 rounded-lg text-base font-medium transition-colors",
+                            pathname.includes('/dashboard')
+                              ? "bg-orange-500/10 text-orange-500"
+                              : "text-gray-300 hover:bg-gray-800 hover:text-orange-400"
+                          )}
+                        >
+                          <LayoutDashboard size={20} />
+                          <span>Dashboard</span>
+                        </Link>
+                      )}
+
+                      <Link 
+                        href="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 py-3 px-4 rounded-lg text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-orange-400 transition-colors"
+                      >
+                        <ShoppingBag size={20} />
+                        <span>My Orders</span>
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Login/Logout Button */}
+                  <div className="pt-2 border-t border-gray-800">
                     {user ? (
                         <button 
                           onClick={() => { setIsOpen(false); setShowLogoutModal(true); }}
-                          className="block w-full bg-red-500/10 text-red-500 py-3 rounded-lg hover:bg-red-500 hover:text-white transition"
+                          className="flex items-center justify-center gap-2 w-full bg-red-500/10 text-red-500 py-3 rounded-lg hover:bg-red-500 hover:text-white transition font-medium"
                         >
-                           Logout
+                          <LogOut size={20} />
+                          <span>Logout</span>
                         </button>
                     ) : (
-                        <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 bg-orange-600 text-white py-2.5 rounded-lg">
-                          <User size={18} /> Login
+                        <Link 
+                          href="/login" 
+                          onClick={() => setIsOpen(false)} 
+                          className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg transition font-medium"
+                        >
+                          <User size={20} /> 
+                          <span>Login</span>
                         </Link>
                     )}
                   </div>
@@ -279,6 +391,7 @@ export default function Navbar() {
         </AnimatePresence>
       </nav>
 
+      {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
@@ -296,9 +409,20 @@ export default function Navbar() {
               className="relative bg-[#1a1c20] border border-gray-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center"
             >
                <h3 className="text-xl font-bold text-white mb-2">Log Out?</h3>
-               <div className="flex gap-3 mt-4">
-                  <button onClick={() => setShowLogoutModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-800 text-gray-300">Cancel</button>
-                  <button onClick={handleLogoutConfirm} className="flex-1 py-2.5 rounded-lg bg-red-600 text-white">Yes, Logout</button>
+               <p className="text-gray-400 text-sm mb-4">Are you sure you want to log out?</p>
+               <div className="flex gap-3">
+                  <button 
+                    onClick={() => setShowLogoutModal(false)} 
+                    className="flex-1 py-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleLogoutConfirm} 
+                    className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition font-medium"
+                  >
+                    Yes, Logout
+                  </button>
                </div>
             </motion.div>
           </div>
