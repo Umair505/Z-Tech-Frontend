@@ -37,7 +37,7 @@ export default function NewArrivals({ products = [] }) {
                 <ProductCard product={product} />
               </CarouselItem>
             ))}
-          </CarouselContent>
+          </CarouselContent> 
           <div className="hidden md:block">
             <CarouselPrevious className="left-2 bg-white border-gray-200 hover:text-orange-600" />
             <CarouselNext className="right-2 bg-white border-gray-200 hover:text-orange-600" />

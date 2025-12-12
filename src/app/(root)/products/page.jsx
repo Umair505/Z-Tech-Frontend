@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, SlidersHorizontal, X, Loader2 } from 'lucide-react';
-import ProductCard from '@/components/cards/ProductCard'; // ১. স্মার্ট কার্ড ইম্পোর্ট
+import ProductCard from '@/components/cards/ProductCard'; 
 
 export default function ProductsPage() {
   // --- States ---
@@ -37,7 +37,6 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Artificial delay for UX demo
         await new Promise(resolve => setTimeout(resolve, 800)); 
         
         const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/products`);

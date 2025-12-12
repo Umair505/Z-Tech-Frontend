@@ -282,3 +282,54 @@ Use Next.js App Router conventions.
 Use React Server + Client components appropriately.
 All product images through Next/Image.
 Keep UI clean, futuristic, and gadget-focused.”
+
+
+
+
+
+
+
+
+
+
+
+
+import { NextResponse } from 'next/server';
+
+export function middleware(request) {
+  const token = request.cookies.get('token')?.value;
+  const { pathname } = request.nextUrl;
+
+  // ১. যে রাউটগুলোতে লগইন ছাড়া ঢোকা যাবে না
+  // '/dashboard' দিলে এর ভেতরের সব রাউট (orders, products ইত্যাদি) অটোমেটিক প্রোটেক্টেড হয়ে যাবে
+  const protectedRoutes = ['/checkout', '/profile', '/wishlist', '/cart', '/dashboard'];
+
+  // চেক করি ইউজার কোনো প্রোটেক্টেড রাউটে যাওয়ার চেষ্টা করছে কিনা
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+  // --- লজিক ১: ইউজার লগইন নেই কিন্তু প্রোটেক্টেড পেজে যেতে চাচ্ছে ---
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // --- লজিক ২: ইউজার অলরেডি লগইন করা (টোকেন আছে) কিন্তু লগইন/সাইনআপ পেজে যেতে চাচ্ছে ---
+  const authRoutes = ['/login', '/signup'];
+  if (authRoutes.includes(pathname) && token) {
+     // তাকে হোম পেজে পাঠিয়ে দাও
+     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*', 
+    '/checkout/:path*', 
+    '/profile/:path*',
+    '/wishlist/:path*',
+    '/cart/:path*',
+    '/login',
+    '/signup'
+  ],
+};

@@ -58,9 +58,8 @@ export default function DashboardLayout({ children }) {
     }
   };
 
-  // 2. পুরো লেআউটটি AdminRoute দিয়ে র‍্যাপ করে দিন
   return (
-    <AdminRoute>
+  
       <div className="min-h-screen bg-gray-50 text-gray-900 flex font-sans">
         
         {/* --- SIDEBAR --- */}
@@ -189,6 +188,6 @@ export default function DashboardLayout({ children }) {
           <div className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
         )}
       </div>
-    </AdminRoute>
+   
   );
 }
