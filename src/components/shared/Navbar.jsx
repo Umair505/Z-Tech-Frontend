@@ -15,6 +15,7 @@ import useRole from "@/hooks/userRole";
 import useAxiosSecure from "@/hooks/useAxiosSecure"; 
 import { useQuery } from "@tanstack/react-query"; 
 import CartDrawer from "./CartDrawer"; 
+import SearchBar from "./SearchBar";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false); 
@@ -73,6 +74,11 @@ export default function Navbar() {
     setIsOpen(false);
   };
 
+  // Close mobile menu after search
+  const handleMobileSearch = () => {
+    setIsOpen(false);
+  };
+
   return (
     <>
       <CartDrawer isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
@@ -92,16 +98,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Search */}
-            <div className="hidden md:flex flex-1 max-w-xl mx-4 relative group">
-              <input
-                type="text"
-                placeholder="Search gadgets..."
-                className="w-full bg-[#1a1c20] text-gray-200 border border-gray-700 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 placeholder:text-gray-500"
-              />
-              <button className="absolute right-1 top-1 bottom-1 bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full transition-colors duration-300">
-                <Search size={18} />
-              </button>
-            </div>
+            <SearchBar className="hidden md:flex flex-1 max-w-xl mx-4" />
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-6">
@@ -277,16 +274,7 @@ export default function Navbar() {
                <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
                   
                   {/* Mobile Search */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search gadgets..."
-                      className="w-full bg-[#1a1c20] text-gray-200 border border-gray-700 rounded-full py-2.5 pl-5 pr-12 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 placeholder:text-gray-500"
-                    />
-                    <button className="absolute right-1 top-1 bottom-1 bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full transition-colors duration-300">
-                      <Search size={18} />
-                    </button>
-                  </div>
+                  <SearchBar onSearch={handleMobileSearch} />
 
                   {/* User Profile Section (Mobile) */}
                   {user && (
