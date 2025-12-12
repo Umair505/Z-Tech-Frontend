@@ -90,12 +90,13 @@ export default function HeroSection() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-auto lg:h-[500px]">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
         
         {/* LEFT SIDE: MAIN CAROUSEL */}
-        <div className="lg:col-span-3 relative group overflow-hidden rounded-2xl  bg-[#1a1c20]">
+        <div className="lg:col-span-3 relative group overflow-hidden rounded-2xl bg-[#1a1c20]">
           
-          <div className="relative w-full h-[400px] lg:h-full">
+          {/* Responsive height container */}
+          <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[21/10] lg:min-h-[500px]">
             <AnimatePresence initial={false} custom={direction}>
               <motion.div
                 key={slides[current].id}
@@ -106,33 +107,35 @@ export default function HeroSection() {
                 exit="exit"
                 className="absolute inset-0 w-full h-full"
               >
-                {/* Clean Image Only - No Overlays */}
+                {/* Responsive Image */}
                 <Image
                   src={slides[current].image}
                   alt={slides[current].title}
                   fill
-                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 75vw, 66vw"
+                  className="object-contain sm:object-cover object-center"
                   priority
+                  quality={90}
                 />
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - Hidden on Mobile */}
             <button 
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-orange-500 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="hidden sm:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-orange-500 text-white p-2 lg:p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 items-center justify-center"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={20} className="lg:w-6 lg:h-6" />
             </button>
             <button 
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-orange-500 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="hidden sm:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-orange-500 text-white p-2 lg:p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 items-center justify-center"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={20} className="lg:w-6 lg:h-6" />
             </button>
 
             {/* Pagination Dots */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+            <div className="absolute bottom-3 sm:bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-1.5 sm:gap-2">
               {slides.map((_, index) => (
                 <button
                   key={index}
@@ -140,35 +143,42 @@ export default function HeroSection() {
                     setDirection(index > current ? 1 : -1);
                     setCurrent(index);
                   }}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    index === current ? "w-8 bg-orange-500" : "w-2 bg-gray-500/50 hover:bg-white"
+                  className={`h-1 sm:h-1.5 rounded-full transition-all duration-300 ${
+                    index === current 
+                      ? "w-6 sm:w-8 bg-orange-500" 
+                      : "w-1.5 sm:w-2 bg-gray-500/50 hover:bg-white"
                   }`}
+                  aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
             </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE: STATIC BANNERS - Clean Images Only */}
-        <div className="lg:col-span-1 flex flex-col gap-6 h-[400px] lg:h-full">
+        {/* RIGHT SIDE: STATIC BANNERS */}
+        <div className="lg:col-span-1 grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
           
-          {/* Banner 1: KS3 - Image Only */}
-          <div className="relative flex-1 group rounded-2xl overflow-hidden">
+          {/* Banner 1: KS3 */}
+          <div className="relative group rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-auto lg:flex-1 lg:min-h-[242px]">
             <Image
               src="/images/ks3.webp"
               alt="KS3 Gadget"
               fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              quality={85}
             />
           </div>
 
-          {/* Banner 2: Watch - Image Only */}
-          <div className="relative flex-1 group rounded-2xl overflow-hidden ">
+          {/* Banner 2: Watch */}
+          <div className="relative group rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-auto lg:flex-1 lg:min-h-[242px]">
             <Image
               src="/images/watch.jpeg"
               alt="Premium Watch"
               fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              quality={85}
             />
           </div>
 
