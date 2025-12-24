@@ -10,9 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-// FIX: Added default empty array
 export default function FeaturedProducts({ products = [] }) {
-  // FIX: Added safety check
   const featuredItems = Array.isArray(products) ? products.filter(p => p.isFeatured) : [];
 
   if (featuredItems.length === 0) return null;

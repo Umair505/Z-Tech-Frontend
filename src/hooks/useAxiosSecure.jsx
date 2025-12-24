@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // 1. Changed import
+import { useRouter } from 'next/navigation'; 
 import toast from 'react-hot-toast';
 import useAuth from './useAuth';
 
@@ -10,7 +10,7 @@ export const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
-  const router = useRouter(); // 2. Changed hook initialization
+  const router = useRouter(); 
   const { logOut } = useAuth();
   
   useEffect(() => {
@@ -18,7 +18,7 @@ const useAxiosSecure = () => {
       (res) => res,
       async (error) => {
         if (!error.response) {
-          // Network error or no response
+        
           toast.error('Network error. Please check your connection.');
           return Promise.reject(error);
         }

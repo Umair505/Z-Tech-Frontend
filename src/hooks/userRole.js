@@ -14,14 +14,9 @@ const useRole = () => {
     enabled: !authLoading && !!user?.email,
     
     queryFn: async () => {
-      // console.log("🔍 Checking role for:", user.email);
-      
-      // Make sure this matches your backend route exactly!
-      // If backend is app.get('/user/role/:email'), use this:
       const { data } = await axiosSecure.get(`/user/role/${user?.email}`);
       return data.role;
     },
-    // Optional: Keep previous data while fetching new to prevent flickering
     placeholderData: null, 
   });
 

@@ -14,7 +14,6 @@ import { auth } from '@/lib/firebase/firebase.init'
 
 export const AuthContext = createContext(null)
 
-// ৩. এখানে const auth = getAuth(app) লাইনটি আর দরকার নেই
 const googleProvider = new GoogleAuthProvider()
 
 const AuthProvider = ({ children }) => {
