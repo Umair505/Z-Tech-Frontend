@@ -30,6 +30,38 @@ The Product Details page provides in-depth information about a selected gadget, 
 
 ---
 
+### 💳 Checkout Page
+
+![Checkout Page](public/images/checkout.png)
+
+The Checkout page provides a smooth and secure purchase experience. Users can review their selected items, confirm order details, and complete payments through an integrated checkout flow designed for clarity and ease of use.
+
+---
+
+### 📦 My Orders Page
+
+![My Orders Page](public/images/myorders.png)
+
+The My Orders page allows users to track their purchase history in one place. Customers can view order status, order details, and previous transactions, ensuring transparency and better order management.
+
+---
+
+### 🧩 Admin Products (CRUD Management)
+
+![Admin Products CRUD](public/images/adminProductsforcrud.png)
+
+This page is part of the Admin Dashboard where administrators can perform full CRUD operations on products. Admins can add new gadgets, update existing product information, and remove outdated items efficiently.
+
+---
+
+### 📊 Orders Management (Admin)
+
+![Orders Management](public/images/ordersManagement.png)
+
+The Orders Management page enables administrators to monitor and manage all customer orders. It provides tools to view order details, track order status, and handle order processing efficiently from a centralized dashboard.
+
+---
+
 ### 🛠️ Admin Dashboard
 
 ![Admin Dashboard](public/images/admindashboard.png)
