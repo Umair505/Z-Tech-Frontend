@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Loader2, User, Mail, Lock, Phone } from 'lucide-react';
 import { toast } from "sonner";
+import PublicRoute from '@/components/PublicRoute';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -83,6 +84,7 @@ export default function SignupPage() {
   };
 
   return (
+    <PublicRoute>
     <div className="flex items-center justify-center min-h-screen bg-[#F9FAFB] px-4 font-sans text-[#334155]">
       <Card className="w-full max-w-md bg-white shadow-xl rounded-xl overflow-hidden border-none pb-4">
         
@@ -172,5 +174,6 @@ export default function SignupPage() {
         </CardFooter>
       </Card>
     </div>
+    </PublicRoute>
   );
 }

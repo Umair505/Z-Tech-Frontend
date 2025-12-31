@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Loader2, Mail, Lock } from 'lucide-react'; 
 import { toast } from "sonner"; 
+import PublicRoute from '@/components/PublicRoute';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -73,6 +74,7 @@ export default function LoginPage() {
   };
 
   return (
+    <PublicRoute>
     <div className="flex items-center justify-center min-h-screen bg-[#F9FAFB] px-4 font-sans text-[#334155]">
       <Card className="w-full max-w-md bg-white shadow-lg rounded-xl overflow-hidden border-none pb-4">
         {/* Header Toggle */}
@@ -125,5 +127,6 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+    </PublicRoute>
   );
 }

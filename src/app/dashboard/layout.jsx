@@ -19,7 +19,7 @@ import { useState } from 'react';
 import useAuth from '@/hooks/useAuth';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-import AdminRoute from '@/components/auth/AdminRoute'; // 1. AdminRoute ইম্পোর্ট করুন
+import AdminRoute from '@/components/auth/AdminRoute';
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }) {
   };
 
   return (
-  
+    <AdminRoute>
       <div className="min-h-screen bg-gray-50 text-gray-900 flex font-sans">
         
         {/* --- SIDEBAR --- */}
@@ -188,6 +188,6 @@ export default function DashboardLayout({ children }) {
           <div className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
         )}
       </div>
-   
+   </AdminRoute>
   );
 }
