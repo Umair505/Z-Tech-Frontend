@@ -171,11 +171,15 @@ export default function ProductDetailsPage() {
                 <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-blue-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1 rounded-full z-10">NEW</span>
               )}
               {selectedImage ? (
-                <img 
-                  src={selectedImage} 
-                  alt={product.name} 
-                  className="w-full h-full object-contain p-4 sm:p-8 transition-transform duration-500 group-hover:scale-110 cursor-zoom-in" 
-                />
+                <div className="relative w-full h-full">
+                  <Image 
+                    src={selectedImage} 
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain p-4 sm:p-8 transition-transform duration-500 group-hover:scale-110 cursor-zoom-in"
+                  />
+                </div>
               ) : (
                 <div className="text-gray-300 text-sm">No Image</div>
               )}
@@ -189,7 +193,9 @@ export default function ProductDetailsPage() {
                     onClick={() => setSelectedImage(img)}
                     className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 overflow-hidden flex-shrink-0 transition-all ${selectedImage === img ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                    <Image 
+                    src={img} 
+                    alt="thumb" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

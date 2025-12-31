@@ -49,38 +49,27 @@ const AuthProvider = ({ children }) => {
 
   // Observer
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async currentUser => {
-      console.log('Auth State Changed ->', currentUser?.email);
-      
-      setUser(currentUser);
+  const unsubscribe = onAuthStateChanged(auth, async currentUser => {
+    setUser(currentUser);
 
-      if (currentUser) {
-        try {
-          await axios.post(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}/jwt`,
-            { email: currentUser.email },
-            { withCredentials: true }
-          )
-        } catch (error) {
-          console.error("JWT Error:", error);
-        }
-      } else {
-        try {
-          await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/logout`, {
-            withCredentials: true,
-          })
-        } catch (error) {
-          console.error("Logout API Error:", error);
-        }
+    if (currentUser) {
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/jwt`,
+          { email: currentUser.email },
+          { withCredentials: true }
+        );
+      } catch (error) {
+        console.error("JWT Error:", error);
       }
-      
-      setLoading(false)
-    })
-    
-    return () => {
-      return unsubscribe()
     }
-  }, [])
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
   const authInfo = {
     user,

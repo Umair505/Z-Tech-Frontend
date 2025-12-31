@@ -28,11 +28,10 @@ const useAxiosSecure = () => {
         
         switch (status) {
           case 401:
-            // Unauthorized - logout and redirect to login
-            await logOut();
-            toast.error('Session expired. Please login again.');
-            router.push('/login'); // 3. Changed navigate to router.push
-            break;
+          toast.error('Unauthorized. Please login.');
+          router.push('/login');
+          break;
+
             
           case 403:
             // Forbidden - show message and redirect to dashboard

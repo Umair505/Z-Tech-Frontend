@@ -33,8 +33,7 @@ export default function WishlistPage() {
 
   // Add to Cart from Wishlist
   const handleAddToCart = async (item) => {
-      // Implement add to cart logic (similar to ProductCard)
-      // For now just redirecting or showing toast
+
       toast.success("Feature coming soon: Direct add from wishlist");
   }
 
@@ -72,7 +71,7 @@ export default function WishlistPage() {
                         )}
                         <button 
                             onClick={() => handleDelete(item._id)}
-                            className="absolute top-3 right-3 p-2 bg-white text-red-500 rounded-full shadow-sm hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                            className="absolute top-3 right-3 p-2 bg-white text-red-500 rounded-full shadow-sm "
                         >
                             <Trash2 size={18} />
                         </button>
